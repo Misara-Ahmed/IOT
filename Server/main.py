@@ -2,8 +2,6 @@ import socket
 import cv2
 import numpy as np
 
-app = Flask(__name__)
-
 UDP_IP = "0.0.0.0"  # Listen on all available interfaces
 UDP_PORT = 8080
 BUFFER_SIZE = 1460
