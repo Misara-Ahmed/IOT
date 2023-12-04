@@ -4,8 +4,8 @@
 
 #define WIFI_SSID "STUDBME2"
 #define WIFI_PASSWORD "BME2Stud"
-#define API_KEY "AIzaSyD3zTa3r_nKHegRafG4mAdmC-XRHkX3sQg"
-#define DATABASE_URL "https://esp32thirdtrial-default-rtdb.europe-west1.firebasedatabase.app/"
+#define API_KEY "AIzaSyDZaEqPyzP7_7lj05-1f9sybdp8CoGMICI"
+#define DATABASE_URL "https://potentiometers-6c911-default-rtdb.europe-west1.firebasedatabase.app/"
 
 #define POTENTIOMETER_PIN_1 36
 #define POTENTIOMETER_PIN_2 39
@@ -114,7 +114,12 @@ void loop()
 
     if (Firebase.RTDB.setFloat(&fbdo, "potentiometers/pot_1", pt_1_value) &&
         Firebase.RTDB.setFloat(&fbdo, "potentiometers/pot_2", pt_2_value) &&
-        Firebase.RTDB.setFloat(&fbdo, "potentiometers/pot_3", pt_3_value))
+        Firebase.RTDB.setFloat(&fbdo, "potentiometers/pot_3", pt_3_value) &&
+        Firebase.RTDB.setBool(&fbdo, "Heart rate alarm", pt_1_alarm)      &&
+        Firebase.RTDB.setBool(&fbdo, "Oxygen concentration alarm", pt_2_alarm)  &&
+        Firebase.RTDB.setBool(&fbdo, "Tempreture alarm", pt_3_alarm)  
+        
+        )
     {
       Serial.println("Data sent to Firebase successfully");
       Serial.println("Path: " + fbdo.dataPath());
@@ -163,7 +168,7 @@ void tokenStatusCallback(token_info_t info)
     // Serial.println("Generated Token Type: " + String(info.token_type));
     // Serial.println("Token Expires: " + String(info.expires));
   //}
-  else
+  //else
   //{
     // Handle errors or retry logic here
   //}

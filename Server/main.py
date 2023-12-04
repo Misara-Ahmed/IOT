@@ -65,13 +65,5 @@ def display_image(img_data):
     cv2.imshow("Received Image", img_array)
     cv2.waitKey(1)
 
-@app.route('/')
-def index():
-    return render_template('index_received.html')
-
-if __name__ == '__main__':
-    import threading
-    receiver_thread = threading.Thread(target=receive_image, daemon=True)
-    receiver_thread.start()
-
-    app.run(debug=True, host='0.0.0.0', port=5000)
+while(True):
+    receive_image()

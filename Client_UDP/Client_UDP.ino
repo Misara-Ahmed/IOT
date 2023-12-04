@@ -29,12 +29,15 @@
 #define HREF_GPIO_NUM 23
 #define PCLK_GPIO_NUM 22
 
-const char* ssid = "STUDBME2";
-const char* password = "BME2Stud";
+// const char* ssid = "STUDBME2";
+// const char* password = "BME2Stud";
+const char* ssid = "Mi Note 10 Lite";
+const char* password = "misara246";
 // const char* udpAddress = "172.28.130.181";
 //const char *ssid = "Etisalat-HjHC";
 //const char *password = "missarahmed@246";
-const char* udpAddress = "172.28.130.49";
+//const char* udpAddress = "172.28.133.188";
+const char* udpAddress = "192.168.170.87";
 const int udpPort = 8080;
 
 boolean connected = false;
