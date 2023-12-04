@@ -1,36 +1,3 @@
-# import socket
-#
-# UDP_IP = "0.0.0.0"  # Listen on all available interfaces
-# UDP_PORT = 8080
-#
-# BUFFER_SIZE = 1460
-#
-# def main():
-#     # Create a UDP socket
-#     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-#         # Bind the socket to the specified IP address and port
-#         s.bind((UDP_IP, UDP_PORT))
-#         print(f"UDP Server listening on {UDP_IP}:{UDP_PORT}")
-#
-#         while True:
-#             # Receive data from the ESP32
-#             data, addr = s.recvfrom(BUFFER_SIZE)
-#
-#             # Save the received data to a file
-#             save_to_file(data)
-#
-# def save_to_file(data):
-#     # Specify the file name to save the image
-#     file_name = "received_image_1.jpg"
-#
-#     # Append the received data to the file
-#     with open(file_name, "ab") as file:
-#         file.write(data)
-#
-# if __name__ == "__main__":
-#     main()
-
-from flask import Flask, render_template, Response
 import socket
 import cv2
 import numpy as np
@@ -62,7 +29,13 @@ def receive_image():
 def display_image(img_data):
     img_array = cv2.imdecode(img_data, cv2.IMREAD_COLOR)
 
-    cv2.imshow("Received Image", img_array)
+    TARGET_WIDTH = 400
+    TARGET_HEIGHT = 600
+
+    # Resize the frame
+    resized_frame = cv2.resize(img_array, (TARGET_WIDTH, TARGET_HEIGHT))
+
+    cv2.imshow("Received Image", resized_frame)
     cv2.waitKey(1)
 
 while(True):
