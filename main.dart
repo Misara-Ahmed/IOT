@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +16,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'firebase_options.dart';
-
+DatabaseReference dbRef = FirebaseDatabase.instance.ref("potentiometers");
 /*48aaaaaaal*/
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +37,81 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+class RealTime extends StatefulWidget {
+  const RealTime({Key? key}) : super(key: key);
+
+  @override
+  State<RealTime> createState() => _RealTimeState();
+}
+
+class _RealTimeState extends State<RealTime> {
+  late DatabaseReference dbRef;
+
+  @override
+  void initState() {
+    super.initState();
+    dbRef = FirebaseDatabase.instance.reference();
+  }
+
+  Map<String, dynamic> flattenMap(Map<dynamic, dynamic> nestedMap, {String prefix = ''}) {
+    Map<String, dynamic> flattenedMap = {};
+
+    void flatten(Map<dynamic, dynamic> map, {String prefix = ''}) {
+      map.forEach((key, value) {
+        if (value is Map<dynamic, dynamic>) {
+          flatten(value, prefix: '$prefix$key.');
+        } else {
+          flattenedMap['$prefix$key'] = value;
+        }
+      });
+    }
+
+    flatten(nestedMap);
+
+    return flattenedMap;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Real-Time Data'),
+      ),
+      body: StreamBuilder(
+        stream: dbRef.onValue,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            DataSnapshot dataValues = snapshot.data!.snapshot;
+            Map<dynamic, dynamic>? potValues = dataValues.value as Map?;
+            print(flattenMap(potValues!));
+            final output = flattenMap(potValues!);
+            List<MapEntry<dynamic, dynamic>> items =
+                output?.entries.toList() ?? [];
+            items.sort((a, b) => a.key.compareTo(b.key));
+            print(potValues);
+            return ListView.builder(
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  child: ListTile(
+                    title: Text(items[index].key.toString()),
+                    subtitle: Text(items[index].value.toString()),
+                  ),
+                );
+              },
+            );
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        },
+      ),
+    );
+  }
+}
+
+
 
 class FirstRoute extends StatelessWidget {
   const FirstRoute({Key? key}) : super(key: key);
@@ -56,7 +133,7 @@ class FirstRoute extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: StadiumBorder()),
+                  child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.white, shape: StadiumBorder()),
                     // color: Colors.green,
                     // borderRadius: BorderRadius.circular(25),
                     child: const Text('Firebase Button'),
@@ -72,7 +149,7 @@ class FirstRoute extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: StadiumBorder()),
+                  child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.white, shape: StadiumBorder()),
                     // color: Colors.cyan,
                     // borderRadius: BorderRadius.circular(25),
                     child: const Text('Open route'),
@@ -81,6 +158,20 @@ class FirstRoute extends StatelessWidget {
                         context,
                         CupertinoPageRoute(
                             builder: (context) => const SecondRoute()),
+                      );
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.white, shape: StadiumBorder()),
+                    // color: Colors.cyan,
+                    // borderRadius: BorderRadius.circular(25),
+                    child: const Text('real time'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const RealTime()),
                       );
                     },
                   ),
@@ -328,3 +419,4 @@ class _SecondRouteState extends State<SecondRoute> {
     );
   }
 }
+
