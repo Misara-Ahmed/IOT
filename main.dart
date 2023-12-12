@@ -1,9 +1,8 @@
-import 'dart:io';
+import 'dart:async';
+
 
 import 'package:csv/csv.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,9 +12,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'firebase_options.dart';
+
 DatabaseReference dbRef = FirebaseDatabase.instance.ref("potentiometers");
 /*48aaaaaaal*/
 Future<void> main() async {
@@ -31,12 +30,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       home: FirstRoute(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
+
 class RealTime extends StatefulWidget {
   const RealTime({Key? key}) : super(key: key);
 
@@ -53,7 +53,8 @@ class _RealTimeState extends State<RealTime> {
     dbRef = FirebaseDatabase.instance.reference();
   }
 
-  Map<String, dynamic> flattenMap(Map<dynamic, dynamic> nestedMap, {String prefix = ''}) {
+  Map<String, dynamic> flattenMap(Map<dynamic, dynamic> nestedMap,
+      {String prefix = ''}) {
     Map<String, dynamic> flattenedMap = {};
 
     void flatten(Map<dynamic, dynamic> map, {String prefix = ''}) {
@@ -75,7 +76,7 @@ class _RealTimeState extends State<RealTime> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Real-Time Data'),
+        title: const Text('Real-Time Data'),
       ),
       body: StreamBuilder(
         stream: dbRef.onValue,
@@ -83,12 +84,12 @@ class _RealTimeState extends State<RealTime> {
           if (snapshot.hasData) {
             DataSnapshot dataValues = snapshot.data!.snapshot;
             Map<dynamic, dynamic>? potValues = dataValues.value as Map?;
-            print(flattenMap(potValues!));
+            // print(flattenMap(potValues!));
             final output = flattenMap(potValues!);
             List<MapEntry<dynamic, dynamic>> items =
                 output?.entries.toList() ?? [];
             items.sort((a, b) => a.key.compareTo(b.key));
-            print(potValues);
+            // print(potValues);
             return ListView.builder(
               itemCount: items.length,
               itemBuilder: (context, index) {
@@ -103,7 +104,7 @@ class _RealTimeState extends State<RealTime> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
         },
       ),
@@ -111,79 +112,112 @@ class _RealTimeState extends State<RealTime> {
   }
 }
 
-
-
 class FirstRoute extends StatelessWidget {
   const FirstRoute({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white60,
       navigationBar: const CupertinoNavigationBar(
-        middle: Text('First Route'),
+        middle: Text('Home'),
+        backgroundColor: Colors.cyan,
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.white, shape: StadiumBorder()),
-                    // color: Colors.green,
-                    // borderRadius: BorderRadius.circular(25),
-                    child: const Text('Firebase Button'),
-                    onPressed: () {
-                      // Load CSV data in CsvScreen when left button is pressed
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => CsvScreen(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: const StadiumBorder(),
                         ),
-                      );
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.white, shape: StadiumBorder()),
-                    // color: Colors.cyan,
-                    // borderRadius: BorderRadius.circular(25),
-                    child: const Text('Open route'),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                            builder: (context) => const SecondRoute()),
-                      );
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.white, shape: StadiumBorder()),
-                    // color: Colors.cyan,
-                    // borderRadius: BorderRadius.circular(25),
-                    child: const Text('real time'),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const RealTime()),
-                      );
-                    },
-                  ),
+                        child: const Text('Firebase Button'),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                              builder: (context) => CsvScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: const StadiumBorder(),
+                        ),
+                        child: const Text('Open route'),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                              builder: (context) => const SecondRoute(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: const StadiumBorder(),
+                        ),
+                        child: const Text('real time'),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const RealTime(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          // Add your icon here
+          const Positioned(
+            bottom: 70.0,
+            right: 16.0,
+            child: Icon(
+              Icons.monitor_outlined,
+              color: Colors.black87,
+              size: 50.0,
+            ),
+          ),
+          // Centered text
+          const Center(
+            child: Text(
+              'Monitor Application',
+              style: TextStyle(
+                decoration: TextDecoration.none,
+                color: Colors.black87,
+                fontSize: 30.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
 
 class CsvScreen extends StatefulWidget {
   @override
@@ -191,11 +225,18 @@ class CsvScreen extends StatefulWidget {
 }
 
 class _CsvScreenState extends State<CsvScreen> {
+  late DatabaseReference dbRef2;
   List<List<dynamic>> data = [];
+  List<FlSpot> spots = [];
+  late Timer timer;
+  int startIndex = 0;
+
   @override
   void initState() {
     super.initState();
     loadCsv();
+    timer = Timer.periodic(const Duration(milliseconds: 100), _updateDataSource);
+    dbRef2 = FirebaseDatabase.instance.reference().child("potentiometers");
   }
 
   Future<void> loadCsv() async {
@@ -205,29 +246,27 @@ class _CsvScreenState extends State<CsvScreen> {
       final dataBytes = await csvDataRef.getData();
 
       if (dataBytes == null) {
-        // Handle the case where the data is null
         print('CSV data is null.');
         return;
       }
-
       final csvData = String.fromCharCodes(dataBytes);
-      final decoded = CsvToListConverter().convert(csvData);
+      final decoded = const CsvToListConverter().convert(csvData);
       setState(() {
         data = decoded;
+        _updateSpots();
       });
     } catch (error) {
       print('Error loading CSV: $error');
-      // Handle error, e.g., show an error message to the user
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to load CSV data. Please try again.'),
+            title: const Text('Error'),
+            content: const Text('Failed to load CSV data. Please try again.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );
@@ -236,78 +275,123 @@ class _CsvScreenState extends State<CsvScreen> {
     }
   }
 
+  void _updateDataSource(Timer timer) {
+    setState(() {
+      // Increment the startIndex to display the next 20 points
+      startIndex += 1;
+      // Update the spots based on the new startIndex
+      _updateSpots();
+    });
+  }
+
+  void _updateSpots() {
+    final newPoints = data
+        .skip(startIndex)
+        .take(20)
+        .map((row) => FlSpot(row[0].toDouble(), row[1].toDouble()))
+        .toList();
+
+    // Filter out points that are already present in the spots list
+    final filteredNewPoints = newPoints.where((newPoint) {
+      return !spots.any((existingPoint) =>
+      existingPoint.x == newPoint.x && existingPoint.y == newPoint.y);
+    }).toList();
+
+    spots.addAll(filteredNewPoints);
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('CSV Data'),
+      backgroundColor: Colors.black,
+      appBar: AppBar(foregroundColor: Colors.white,
+        title: const Text('ECG Signal and Potentiometers',),backgroundColor: Colors.black,
       ),
       body: data.isEmpty
-          ? Center(child: CircularProgressIndicator())
-          : Column(
+          ? const Center(child: CircularProgressIndicator())
+          : Row(
         children: [
-          Expanded(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
+          Expanded(flex: 5,
+            child: LineChart(
+              LineChartData(
+                backgroundColor: Colors.black87,
+                minY: -0.8,
+                maxY: 2,
+                clipData: const FlClipData.all(),
+                gridData: const FlGridData(
+                  show: true,
+                  drawVerticalLine: true,
+                  drawHorizontalLine: true,
+                ),
+                titlesData: const FlTitlesData(
+                  show: false,
+                  // rightTitles: AxisTitles(axisNameWidget: Text("Value")),
+                  // topTitles: AxisTitles(axisNameWidget: Text("Time")),
+                ),
+                borderData: FlBorderData(show: true),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    color: Colors.blue,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(show: false),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          StreamBuilder(
+            stream: dbRef2.onValue,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                DataSnapshot dataValues = snapshot.data!.snapshot;
+                Map<dynamic, dynamic>? potValues =
+                dataValues.value as Map?;
+                List<MapEntry<dynamic, dynamic>> items =
+                    potValues?.entries.toList() ?? [];
+                items.sort((a, b) => a.key.compareTo(b.key));
+                List keys = ["temp","Heart rate", "spo2"];
+                return Expanded(
                   child: Container(
-                    // height: 680,
-                    // child: ListView.builder(
-                    //   itemCount: data.length,
-                    //   itemBuilder: (_, index) {
-                    child: Card(
-                      margin: const EdgeInsets.all(3),
-                      color: index == 0 ? Colors.amber : Colors.white,
-                      child: ListTile(
-                        leading: Text(data[index][0].toString()),
-                        title: Text(data[index][1].toString()),
-                        trailing: Text(data[index][2].toString()),
-                      ),
-                      // );
-                      // },
+                    // color: Colors.black87,
+
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          color: Colors.black,
+                          child: ListTile(
+                            title: Text(keys[index].toString(),style: const TextStyle(color: Colors.white,),),
+                            subtitle: Text(items[index].value.toString(),style: const TextStyle(color: Colors.red,fontSize: 15),),
+
+                          ),
+                        );
+                      },
                     ),
                   ),
                 );
-              },
-            ),
-          ),
-          Container(
-            // height: 680,
-            child: Expanded(
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: true),
-                  titlesData: FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: data
-                          .skip(1)
-                          .map(
-                            (row) => FlSpot(
-                          row[0].toDouble(),
-                          row[1].toDouble(),
-                        ),
-                      )
-                          .toList(),
-                      isCurved: true,
-                      color: Colors.blue,
-                      dotData: FlDotData(show: false),
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            },
           ),
         ],
       ),
     );
   }
 }
+
+
 
 class SecondRoute extends StatefulWidget {
   const SecondRoute({Key? key}) : super(key: key);
@@ -324,10 +408,11 @@ class _SecondRouteState extends State<SecondRoute> {
   void _loadCSV() async {
     final _rawData = await rootBundle.loadString("assets/ECG.csv");
     List<List<dynamic>> _listData =
-    const CsvToListConverter().convert(_rawData);
+        const CsvToListConverter().convert(_rawData);
     setState(() {
       _data = _listData;
       button = (button == 0) ? 1 : 0; // Toggle the button state
+      print(_data);
     });
   }
 
@@ -341,7 +426,7 @@ class _SecondRouteState extends State<SecondRoute> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
+      navigationBar: const CupertinoNavigationBar(
         middle: Text('Second Route'),
       ),
       child: Padding(
@@ -353,8 +438,8 @@ class _SecondRouteState extends State<SecondRoute> {
                 height: 680,
                 child: LineChart(
                   LineChartData(
-                    gridData: FlGridData(show: true),
-                    titlesData: FlTitlesData(show: false),
+                    gridData: const FlGridData(show: true),
+                    titlesData: const FlTitlesData(show: false),
                     borderData: FlBorderData(show: false),
                     lineBarsData: [
                       LineChartBarData(
@@ -362,14 +447,15 @@ class _SecondRouteState extends State<SecondRoute> {
                             .skip(1)
                             .map(
                               (row) => FlSpot(
-                            row[0].toDouble(),
-                            row[1].toDouble(),
-                          ),
-                        )
+                                row[0].toDouble(),
+                                row[1].toDouble(),
+                              ),
+                            )
                             .toList(),
                         isCurved: true,
                         color: Colors.blue,
-                        dotData: FlDotData(show: false),
+                        dotData: const FlDotData(show: false),
+
                         belowBarData: BarAreaData(show: false),
                       ),
                     ],
@@ -419,4 +505,3 @@ class _SecondRouteState extends State<SecondRoute> {
     );
   }
 }
-
