@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'dart:io';
 
 import 'package:csv/csv.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -15,13 +15,17 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'firebase_options.dart';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 DatabaseReference dbRef = FirebaseDatabase.instance.ref("potentiometers");
+
 /*48aaaaaaal*/
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // await FirebaseApi().initNotification();
   runApp(const MyApp());
 }
 
@@ -119,12 +123,20 @@ class FirstRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: Colors.white60,
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Home'),
-        backgroundColor: Colors.cyan,
-      ),
+      // navigationBar: const CupertinoNavigationBar(
+      //   middle: Text('Home'),
+      //   backgroundColor: Colors.white60,
+      // ),
       child: Stack(
         children: [
+          Container(
+              height: MediaQuery.of(context).size.height,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/monitor3.jpg'),
+                  fit: BoxFit.fill,
+                ),
+              )),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -157,7 +169,7 @@ class FirstRoute extends StatelessWidget {
                           backgroundColor: Colors.white,
                           shape: const StadiumBorder(),
                         ),
-                        child: const Text('Open route'),
+                        child: const Text('UDP Camera'),
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -206,8 +218,8 @@ class FirstRoute extends StatelessWidget {
               'Monitor Application',
               style: TextStyle(
                 decoration: TextDecoration.none,
-                color: Colors.black87,
-                fontSize: 30.0,
+                color: Colors.blue,
+                fontSize: 60.0,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -217,7 +229,6 @@ class FirstRoute extends StatelessWidget {
     );
   }
 }
-
 
 class CsvScreen extends StatefulWidget {
   @override
@@ -235,7 +246,8 @@ class _CsvScreenState extends State<CsvScreen> {
   void initState() {
     super.initState();
     loadCsv();
-    timer = Timer.periodic(const Duration(milliseconds: 100), _updateDataSource);
+    timer =
+        Timer.periodic(const Duration(milliseconds: 100), _updateDataSource);
     dbRef2 = FirebaseDatabase.instance.reference().child("potentiometers");
   }
 
@@ -294,7 +306,7 @@ class _CsvScreenState extends State<CsvScreen> {
     // Filter out points that are already present in the spots list
     final filteredNewPoints = newPoints.where((newPoint) {
       return !spots.any((existingPoint) =>
-      existingPoint.x == newPoint.x && existingPoint.y == newPoint.y);
+          existingPoint.x == newPoint.x && existingPoint.y == newPoint.y);
     }).toList();
 
     spots.addAll(filteredNewPoints);
@@ -310,88 +322,99 @@ class _CsvScreenState extends State<CsvScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(foregroundColor: Colors.white,
-        title: const Text('ECG Signal and Potentiometers',),backgroundColor: Colors.black,
+      appBar: AppBar(
+        foregroundColor: Colors.white,
+        title: const Text(
+          'ECG Signal and Potentiometers',
+        ),
+        backgroundColor: Colors.black,
       ),
       body: data.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : Row(
-        children: [
-          Expanded(flex: 5,
-            child: LineChart(
-              LineChartData(
-                backgroundColor: Colors.black87,
-                minY: -0.8,
-                maxY: 2,
-                clipData: const FlClipData.all(),
-                gridData: const FlGridData(
-                  show: true,
-                  drawVerticalLine: true,
-                  drawHorizontalLine: true,
-                ),
-                titlesData: const FlTitlesData(
-                  show: false,
-                  // rightTitles: AxisTitles(axisNameWidget: Text("Value")),
-                  // topTitles: AxisTitles(axisNameWidget: Text("Time")),
-                ),
-                borderData: FlBorderData(show: true),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    color: Colors.blue,
-                    dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(show: false),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          StreamBuilder(
-            stream: dbRef2.onValue,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                DataSnapshot dataValues = snapshot.data!.snapshot;
-                Map<dynamic, dynamic>? potValues =
-                dataValues.value as Map?;
-                List<MapEntry<dynamic, dynamic>> items =
-                    potValues?.entries.toList() ?? [];
-                items.sort((a, b) => a.key.compareTo(b.key));
-                List keys = ["temp","Heart rate", "spo2"];
-                return Expanded(
-                  child: Container(
-                    // color: Colors.black87,
-
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          color: Colors.black,
-                          child: ListTile(
-                            title: Text(keys[index].toString(),style: const TextStyle(color: Colors.white,),),
-                            subtitle: Text(items[index].value.toString(),style: const TextStyle(color: Colors.red,fontSize: 15),),
-
-                          ),
-                        );
-                      },
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: LineChart(
+                    LineChartData(
+                      backgroundColor: Colors.black87,
+                      minY: -0.8,
+                      maxY: 2,
+                      clipData: const FlClipData.all(),
+                      gridData: const FlGridData(
+                        show: true,
+                        drawVerticalLine: true,
+                        drawHorizontalLine: true,
+                      ),
+                      titlesData: const FlTitlesData(
+                        show: false,
+                        // rightTitles: AxisTitles(axisNameWidget: Text("Value")),
+                        // topTitles: AxisTitles(axisNameWidget: Text("Time")),
+                      ),
+                      borderData: FlBorderData(show: true),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
+                          color: Colors.blue,
+                          dotData: const FlDotData(show: false),
+                          belowBarData: BarAreaData(show: false),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            },
-          ),
-        ],
-      ),
+                ),
+                StreamBuilder(
+                  stream: dbRef2.onValue,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      DataSnapshot dataValues = snapshot.data!.snapshot;
+                      Map<dynamic, dynamic>? potValues =
+                          dataValues.value as Map?;
+                      List<MapEntry<dynamic, dynamic>> items =
+                          potValues?.entries.toList() ?? [];
+                      items.sort((a, b) => a.key.compareTo(b.key));
+                      List keys = ["Heart rate", "spo2", "Temp"];
+                      return Expanded(
+                        child: Container(
+                          // color: Colors.black87,
+
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: items.length,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                color: Colors.black,
+                                child: ListTile(
+                                  title: Text(
+                                    keys[index].toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    items[index].value.toString(),
+                                    style: const TextStyle(
+                                        color: Colors.red, fontSize: 15),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
+              ],
+            ),
     );
   }
 }
-
-
 
 class SecondRoute extends StatefulWidget {
   const SecondRoute({Key? key}) : super(key: key);
@@ -401,107 +424,185 @@ class SecondRoute extends StatefulWidget {
 }
 
 class _SecondRouteState extends State<SecondRoute> {
-  List<List<dynamic>> _data = [];
-  int button = 0;
-  bool showChart = false;
+  // List<List<dynamic>> _data = [];
+  // int button = 0;
+  // bool showChart = false;
+  //
+  // void _loadCSV() async {
+  //   final _rawData = await rootBundle.loadString("assets/ECG.csv");
+  //   List<List<dynamic>> _listData =
+  //       const CsvToListConverter().convert(_rawData);
+  //   setState(() {
+  //     _data = _listData;
+  //     button = (button == 0) ? 1 : 0; // Toggle the button state
+  //     print(_data);
+  //   });
+  // }
+  //
+  // void _toggleChart() {
+  //   setState(() {
+  //     showChart = !showChart;
+  //     button = 0;
+  //   });
+  // }
+  RawDatagramSocket? udpSocket;
+  Uint8List imgBuffer = Uint8List(0);
+  Image? receivedImage;
 
-  void _loadCSV() async {
-    final _rawData = await rootBundle.loadString("assets/ECG.csv");
-    List<List<dynamic>> _listData =
-        const CsvToListConverter().convert(_rawData);
-    setState(() {
-      _data = _listData;
-      button = (button == 0) ? 1 : 0; // Toggle the button state
-      print(_data);
-    });
+  @override
+  void initState() {
+    super.initState();
+    setupUDP();
   }
 
-  void _toggleChart() {
-    setState(() {
-      showChart = !showChart;
-      button = 0;
+  void setupUDP() async {
+    udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 65002);
+    udpSocket!.listen((RawSocketEvent event) {
+      if (event == RawSocketEvent.read) {
+        Datagram datagram = udpSocket!.receive()!;
+        Uint8List data = datagram.data;
+
+        if (data[0] == 0xFF && data[1] == 0xD8) {
+          // If the received data starts with the JPEG start marker, reset the buffer
+          imgBuffer = Uint8List(0);
+        }
+
+        imgBuffer = Uint8List.fromList([...imgBuffer, ...data]);
+
+        if (data[data.length - 2] == 0xFF && data[data.length - 1] == 0xD9) {
+          // If the received data ends with the JPEG end marker, update the image
+          setState(() {
+            // Display the received image
+            receivedImage = Image.memory(Uint8List.fromList(imgBuffer),
+                gaplessPlayback: true);
+          });
+        }
+      }
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Second Route'),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Stack(
-          children: [
-            if (showChart)
-              Container(
-                height: 680,
-                child: LineChart(
-                  LineChartData(
-                    gridData: const FlGridData(show: true),
-                    titlesData: const FlTitlesData(show: false),
-                    borderData: FlBorderData(show: false),
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: _data
-                            .skip(1)
-                            .map(
-                              (row) => FlSpot(
-                                row[0].toDouble(),
-                                row[1].toDouble(),
-                              ),
-                            )
-                            .toList(),
-                        isCurved: true,
-                        color: Colors.blue,
-                        dotData: const FlDotData(show: false),
+  void dispose() {
+    udpSocket?.close();
+    super.dispose();
+  }
 
-                        belowBarData: BarAreaData(show: false),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: CupertinoButton(
-                onPressed: _toggleChart,
-                child: const Text('Plot'),
-                color: Colors.red,
-              ),
-            ),
-            if (button == 1)
-              Container(
-                height: 680,
-                child: ListView.builder(
-                  itemCount: _data.length,
-                  itemBuilder: (_, index) {
-                    return Card(
-                      margin: const EdgeInsets.all(3),
-                      color: index == 0 ? Colors.amber : Colors.white,
-                      child: ListTile(
-                        leading: Text(_data[index][0].toString()),
-                        title: Text(_data[index][1].toString()),
-                        trailing: Text(_data[index][2].toString()),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            Align(
-              alignment: Alignment.bottomLeft,
-              child: CupertinoButton(
-                onPressed: () {
-                  _loadCSV();
-                  showChart = false;
-                },
-                child: const Text('Read CSV'),
-                color: Colors.red,
-              ),
-            ),
-          ],
+  // @override
+  // Widget build(BuildContext context) {
+  //   return CupertinoPageScaffold(
+  //     navigationBar: const CupertinoNavigationBar(
+  //       middle: Text('Second Route'),
+  //     ),
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(16.0),
+  //       child: Stack(
+  //         children: [
+  //           if (showChart)
+  //             Container(
+  //               height: 680,
+  //               child: LineChart(
+  //                 LineChartData(
+  //                   gridData: const FlGridData(show: true),
+  //                   titlesData: const FlTitlesData(show: false),
+  //                   borderData: FlBorderData(show: false),
+  //                   lineBarsData: [
+  //                     LineChartBarData(
+  //                       spots: _data
+  //                           .skip(1)
+  //                           .map(
+  //                             (row) => FlSpot(
+  //                               row[0].toDouble(),
+  //                               row[1].toDouble(),
+  //                             ),
+  //                           )
+  //                           .toList(),
+  //                       isCurved: true,
+  //                       color: Colors.blue,
+  //                       dotData: const FlDotData(show: false),
+  //
+  //                       belowBarData: BarAreaData(show: false),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //           Align(
+  //             alignment: Alignment.bottomRight,
+  //             child: CupertinoButton(
+  //               onPressed: _toggleChart,
+  //               child: const Text('Plot'),
+  //               color: Colors.red,
+  //             ),
+  //           ),
+  //           if (button == 1)
+  //             Container(
+  //               height: 680,
+  //               child: ListView.builder(
+  //                 itemCount: _data.length,
+  //                 itemBuilder: (_, index) {
+  //                   return Card(
+  //                     margin: const EdgeInsets.all(3),
+  //                     color: index == 0 ? Colors.amber : Colors.white,
+  //                     child: ListTile(
+  //                       leading: Text(_data[index][0].toString()),
+  //                       title: Text(_data[index][1].toString()),
+  //                       trailing: Text(_data[index][2].toString()),
+  //                     ),
+  //                   );
+  //                 },
+  //               ),
+  //             ),
+  //           Align(
+  //             alignment: Alignment.bottomLeft,
+  //             child: CupertinoButton(
+  //               onPressed: () {
+  //                 _loadCSV();
+  //                 showChart = false;
+  //               },
+  //               child: const Text('Read CSV'),
+  //               color: Colors.red,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        foregroundColor: Colors.white,
+        title: Text('UDP Camera'),
+        backgroundColor: Colors.black,
+      ),
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.0),
+          child: receivedImage, // Display the received image
         ),
       ),
     );
   }
 }
+
+// Future<void> handleBackgroundMessaging(RemoteMessage message) async
+// {
+//   print("Title : ${message.notification?.title}");
+//   print("body : ${message.notification?.body}");
+//   print("payload : ${message.data}");
+//
+//
+// }
+// class FirebaseApi{
+//   final firebaseMessaging = FirebaseMessaging.instance;
+//
+//
+//   Future<void> initNotification() async
+//   {
+//     await firebaseMessaging.requestPermission();
+//     final fCMToken = await firebaseMessaging.getToken();
+//     print("Token: $fCMToken");
+//     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessaging);
+//   }
+// }
