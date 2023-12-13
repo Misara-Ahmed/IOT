@@ -31,14 +31,21 @@
 
 // const char* ssid = "STUDBME2";
 // const char* password = "BME2Stud";
-const char* ssid = "Mi Note 10 Lite";
-const char* password = "misara246";
 // const char* udpAddress = "172.28.130.181";
-//const char *ssid = "Etisalat-HjHC";
-//const char *password = "missarahmed@246";
-//const char* udpAddress = "172.28.133.188";
-const char* udpAddress = "192.168.170.87";
-const int udpPort = 8080;
+
+// const char* ssid = "Mi Note 10 Lite";
+// const char* password = "misara246";
+//const char* udpAddress = "192.168.1.2";
+
+const char *ssid = "Etisalat-HjHC";
+const char *password = "missarahmed@246";
+const char* udpAddress = "192.168.1.2";
+
+// const char *ssid = "Misara";
+// const char *password = "miso2468";
+// const char* udpAddress = "192.168.43.72";
+
+const int udpPort = 65002;
 
 boolean connected = false;
 WiFiUDP udp;
@@ -88,11 +95,13 @@ void setup()
 void loop()
 {
   //only send data when connected
-  if (connected) {
+  if (connected)
+  {
     camera_fb_t* fb = NULL;
     esp_err_t res = ESP_OK;
     fb = esp_camera_fb_get();
-    if (!fb) {
+    if (!fb)
+    {
       Serial.println("Camera capture failed");
       esp_camera_fb_return(fb);
       return;
@@ -140,11 +149,15 @@ void sendPacketData(const char* buf, uint16_t len, uint16_t chunkLength)
 {
   uint8_t buffer[chunkLength];
   size_t blen = sizeof(buffer);
+  //Serial.println(blen);
+  //Serial.println(len);
   size_t rest = len % blen;
+  //Serial.println(rest);
 
   for (uint8_t i = 0; i < len / blen; ++i)
   {
     memcpy(buffer, buf + (i * blen), blen);
+    //Serial.print(buf + (i * blen));
     udp.beginPacket(udpAddress, udpPort);
     udp.write(buffer, chunkLength);
     udp.endPacket();
