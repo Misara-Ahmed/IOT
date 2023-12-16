@@ -1,33 +1,25 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:csv/csv.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:flutter/cupertino.dart';
-
 import 'package:fl_chart/fl_chart.dart';
-
 import 'package:firebase_core/firebase_core.dart';
-
 import 'firebase_options.dart';
-
 import 'notification.dart';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 DatabaseReference dbRef = FirebaseDatabase.instance.ref("potentiometers");
 
 /*48aaaaaaal*/
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  NotificationService().initNotification();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // await FirebaseApi().initNotification();
   runApp(const MyApp());
 }
 
@@ -54,29 +46,6 @@ class _RealTimeState extends State<RealTime> {
   late DatabaseReference dbRef;
 
   @override
-  // void initState() {
-  //   super.initState();
-  //   dbRef = FirebaseDatabase.instance.reference();
-  // }
-
-  // Map<String, dynamic> flattenMap(Map<dynamic, dynamic> nestedMap,
-  //     {String prefix = ''}) {
-  //   Map<String, dynamic> flattenedMap = {};
-  //
-  //   void flatten(Map<dynamic, dynamic> map, {String prefix = ''}) {
-  //     map.forEach((key, value) {
-  //       if (value is Map<dynamic, dynamic>) {
-  //         flatten(value, prefix: '$prefix$key.');
-  //       } else {
-  //         flattenedMap['$prefix$key'] = value;
-  //       }
-  //     });
-  //   }
-  //
-  //   flatten(nestedMap);
-  //
-  //   return flattenedMap;
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -84,54 +53,7 @@ class _RealTimeState extends State<RealTime> {
       appBar: AppBar(
         title: const Text('Real-Time Data'),
       ),
-      // body: StreamBuilder(
-      //   stream: dbRef.onValue,
-      //   builder: (context, snapshot) {
-      //     if (snapshot.hasData) {
-      //       DataSnapshot dataValues = snapshot.data!.snapshot;
-      //       Map<dynamic, dynamic>? potValues = dataValues.value as Map?;
-      //       // print(flattenMap(potValues!));
-      //       final output = flattenMap(potValues!);
-      //       List<MapEntry<dynamic, dynamic>> items =
-      //           output?.entries.toList() ?? [];
-      //       items.sort((a, b) => a.key.compareTo(b.key));
-      //       print(items[0].value);
-      //       print(items[1].value);
-      //       print(items[2].value);
-      //       print(output);
-      //
-      //       if((items[0].value)==true)
-      //       {
-      //         NotificationService().showNotification(title: 'ALert', body:'Heart rate is out of range!');
-      //         print(" yalhwaaaaaaaaay");
-      //       }
-      //       if((items[1].value)==true)
-      //       {
-      //         NotificationService().showNotification(title: 'ALert', body:'Oxygen concentration is out of range!');
-      //       }
-      //       if((items[2].value)==true)
-      //       {
-      //         NotificationService().showNotification(title: 'ALert', body:'Temperature is out of range!');
-      //       }
-      //
-      //       return ListView.builder(
-      //         itemCount: items.length,
-      //         itemBuilder: (context, index) {
-      //           return Card(
-      //             child: ListTile(
-      //               title: Text(items[index].key.toString()),
-      //               subtitle: Text(items[index].value.toString()),
-      //             ),
-      //           );
-      //         },
-      //       );
-      //     } else if (snapshot.hasError) {
-      //       return Center(child: Text('Error: ${snapshot.error}'));
-      //     } else {
-      //       return const Center(child: CircularProgressIndicator());
-      //     }
-      //   },
-      // ),
+
     );
   }
 }
@@ -326,7 +248,7 @@ class _CsvScreenState extends State<CsvScreen> {
     // Filter out points that are already present in the spots list
     final filteredNewPoints = newPoints.where((newPoint) {
       return !spots.any((existingPoint) =>
-          existingPoint.x == newPoint.x && existingPoint.y == newPoint.y);
+      existingPoint.x == newPoint.x && existingPoint.y == newPoint.y);
     }).toList();
 
     spots.addAll(filteredNewPoints);
@@ -352,97 +274,97 @@ class _CsvScreenState extends State<CsvScreen> {
       body: data.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : Row(
-              children: [
-                Expanded(
-                  flex: 5,
-                  child: LineChart(
-                    LineChartData(
-                      backgroundColor: Colors.black87,
-                      minY: -0.8,
-                      maxY: 2,
-                      clipData: const FlClipData.all(),
-                      gridData: const FlGridData(
-                        show: true,
-                        drawVerticalLine: true,
-                        drawHorizontalLine: true,
-                      ),
-                      titlesData: const FlTitlesData(
-                        show: false,
-                        // rightTitles: AxisTitles(axisNameWidget: Text("Value")),
-                        // topTitles: AxisTitles(axisNameWidget: Text("Time")),
-                      ),
-                      borderData: FlBorderData(show: true),
-                      lineBarsData: [
-                        LineChartBarData(
-                          spots: spots,
-                          isCurved: true,
-                          color: Colors.blue,
-                          dotData: const FlDotData(show: false),
-                          belowBarData: BarAreaData(show: false),
-                        ),
-                      ],
-                    ),
-                  ),
+        children: [
+          Expanded(
+            flex: 5,
+            child: LineChart(
+              LineChartData(
+                backgroundColor: Colors.black87,
+                minY: -0.8,
+                maxY: 2,
+                clipData: const FlClipData.all(),
+                gridData: const FlGridData(
+                  show: true,
+                  drawVerticalLine: true,
+                  drawHorizontalLine: true,
                 ),
-                StreamBuilder(
-                  stream: dbRef2.onValue,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      DataSnapshot dataValues = snapshot.data!.snapshot;
-                      Map<dynamic, dynamic>? potValues =
-                          dataValues.value as Map?;
-                      List<MapEntry<dynamic, dynamic>> items =
-                          potValues?.entries.toList() ?? [];
-                      items.sort((a, b) => a.key.compareTo(b.key));
-                      List keys = ["Heart rate", "spo2", "Temp"];
-                      // print(items[0].value);
-                      if(items[0].value > 120 || items[0].value<80)
-                      {
-                        NotificationService().showNotification(title: 'ALert', body:'Heart rate is out of range!');
-                        //print(" yalhwaaaaaaaaay");
-                      }
-                      if((items[1].value)<95)
-                      {
-                        NotificationService().showNotification(title: 'ALert', body:'Oxygen concentration is out of range!');
-                      }
-                      if((items[2].value)>38 || (items[2].value)<30)
-                      {
-                        NotificationService().showNotification(title: 'ALert', body:'Temperature is out of range!');
-                      }
+                titlesData: const FlTitlesData(
+                  show: false,
+                  // rightTitles: AxisTitles(axisNameWidget: Text("Value")),
+                  // topTitles: AxisTitles(axisNameWidget: Text("Time")),
+                ),
+                borderData: FlBorderData(show: true),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    color: Colors.blue,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(show: false),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          StreamBuilder(
+            stream: dbRef2.onValue,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                DataSnapshot dataValues = snapshot.data!.snapshot;
+                Map<dynamic, dynamic>? potValues =
+                dataValues.value as Map?;
+                List<MapEntry<dynamic, dynamic>> items =
+                    potValues?.entries.toList() ?? [];
+                items.sort((a, b) => a.key.compareTo(b.key));
+                List keys = ["Heart rate", "spo2", "Temp"];
+                // print(items[0].value);
+                if(items[0].value > 120 || items[0].value<80)
+                {
+                  NotificationService().showNotification(title: 'ALert', body:'Heart rate is out of range!');
+                  //print(" yalhwaaaaaaaaay");
+                }
+                if((items[1].value)<95)
+                {
+                  NotificationService().showNotification(title: 'ALert', body:'Oxygen concentration is out of range!');
+                }
+                if((items[2].value)>38 || (items[2].value)<30)
+                {
+                  NotificationService().showNotification(title: 'ALert', body:'Temperature is out of range!');
+                }
 
-                      return Expanded(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: items.length,
-                          itemBuilder: (context, index) {
-                            return Card(
-                              color: Colors.black,
-                              child: ListTile(
-                                title: Text(
-                                  keys[index].toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  items[index].value.toString(),
-                                  style: const TextStyle(
-                                      color: Colors.red, fontSize: 15),
-                                ),
-                              ),
-                            );
-                          },
+                return Expanded(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        color: Colors.black,
+                        child: ListTile(
+                          title: Text(
+                            keys[index].toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                          subtitle: Text(
+                            items[index].value.toString(),
+                            style: const TextStyle(
+                                color: Colors.red, fontSize: 15),
+                          ),
                         ),
                       );
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                  },
-                ),
-              ],
-            ),
+                    },
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            },
+          ),
+        ],
+      ),
 
     );
   }
@@ -456,27 +378,7 @@ class SecondRoute extends StatefulWidget {
 }
 
 class _SecondRouteState extends State<SecondRoute> {
-  // List<List<dynamic>> _data = [];
-  // int button = 0;
-  // bool showChart = false;
-  //
-  // void _loadCSV() async {
-  //   final _rawData = await rootBundle.loadString("assets/ECG.csv");
-  //   List<List<dynamic>> _listData =
-  //       const CsvToListConverter().convert(_rawData);
-  //   setState(() {
-  //     _data = _listData;
-  //     button = (button == 0) ? 1 : 0; // Toggle the button state
-  //     print(_data);
-  //   });
-  // }
-  //
-  // void _toggleChart() {
-  //   setState(() {
-  //     showChart = !showChart;
-  //     button = 0;
-  //   });
-  // }
+
   RawDatagramSocket? udpSocket;
   Uint8List imgBuffer = Uint8List(0);
   Image? receivedImage;
@@ -518,88 +420,6 @@ class _SecondRouteState extends State<SecondRoute> {
     udpSocket?.close();
     super.dispose();
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return CupertinoPageScaffold(
-  //     navigationBar: const CupertinoNavigationBar(
-  //       middle: Text('Second Route'),
-  //     ),
-  //     child: Padding(
-  //       padding: const EdgeInsets.all(16.0),
-  //       child: Stack(
-  //         children: [
-  //           if (showChart)
-  //             Container(
-  //               height: 680,
-  //               child: LineChart(
-  //                 LineChartData(
-  //                   gridData: const FlGridData(show: true),
-  //                   titlesData: const FlTitlesData(show: false),
-  //                   borderData: FlBorderData(show: false),
-  //                   lineBarsData: [
-  //                     LineChartBarData(
-  //                       spots: _data
-  //                           .skip(1)
-  //                           .map(
-  //                             (row) => FlSpot(
-  //                               row[0].toDouble(),
-  //                               row[1].toDouble(),
-  //                             ),
-  //                           )
-  //                           .toList(),
-  //                       isCurved: true,
-  //                       color: Colors.blue,
-  //                       dotData: const FlDotData(show: false),
-  //
-  //                       belowBarData: BarAreaData(show: false),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //             ),
-  //           Align(
-  //             alignment: Alignment.bottomRight,
-  //             child: CupertinoButton(
-  //               onPressed: _toggleChart,
-  //               child: const Text('Plot'),
-  //               color: Colors.red,
-  //             ),
-  //           ),
-  //           if (button == 1)
-  //             Container(
-  //               height: 680,
-  //               child: ListView.builder(
-  //                 itemCount: _data.length,
-  //                 itemBuilder: (_, index) {
-  //                   return Card(
-  //                     margin: const EdgeInsets.all(3),
-  //                     color: index == 0 ? Colors.amber : Colors.white,
-  //                     child: ListTile(
-  //                       leading: Text(_data[index][0].toString()),
-  //                       title: Text(_data[index][1].toString()),
-  //                       trailing: Text(_data[index][2].toString()),
-  //                     ),
-  //                   );
-  //                 },
-  //               ),
-  //             ),
-  //           Align(
-  //             alignment: Alignment.bottomLeft,
-  //             child: CupertinoButton(
-  //               onPressed: () {
-  //                 _loadCSV();
-  //                 showChart = false;
-  //               },
-  //               child: const Text('Read CSV'),
-  //               color: Colors.red,
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -618,23 +438,4 @@ class _SecondRouteState extends State<SecondRoute> {
   }
 }
 
-// Future<void> handleBackgroundMessaging(RemoteMessage message) async
-// {
-//   print("Title : ${message.notification?.title}");
-//   print("body : ${message.notification?.body}");
-//   print("payload : ${message.data}");
-//
-//
-// }
-// class FirebaseApi{
-//   final firebaseMessaging = FirebaseMessaging.instance;
-//
-//
-//   Future<void> initNotification() async
-//   {
-//     await firebaseMessaging.requestPermission();
-//     final fCMToken = await firebaseMessaging.getToken();
-//     print("Token: $fCMToken");
-//     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessaging);
-//   }
-// }
+
