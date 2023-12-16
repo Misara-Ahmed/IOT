@@ -78,7 +78,7 @@ void loop()
     Serial.println(pt_2_value);
     Serial.println(pt_3_value);
 
-  if (pt_3_value > 37)
+    if (pt_3_value > 37 || pt_3_value < 30)
     {
       // Set the alarm flag to 1
       pt_3_alarm = 1;
@@ -91,7 +91,7 @@ void loop()
     }
 
 
-  if (pt_1_value > 120 || pt_1_value<80)
+    if (pt_1_value > 120 || pt_1_value<80)
     {
       // Set the alarm flag to 1
       pt_1_alarm = 1;
@@ -103,7 +103,7 @@ void loop()
       pt_1_alarm = 0;
     }
 
-  if (pt_2_value<95)
+    if (pt_2_value<95)
     {
       // Set the alarm flag to 1
       pt_2_alarm = 1;
@@ -121,9 +121,8 @@ void loop()
         Firebase.RTDB.setBool(&fbdo, "Heart rate alarm", pt_1_alarm)      &&
         Firebase.RTDB.setBool(&fbdo, "Oxygen concentration alarm", pt_2_alarm)  &&
         Firebase.RTDB.setBool(&fbdo, "Tempreture alarm", pt_3_alarm)  
-        
         )
-    {
+    { 
       Serial.println("Data sent to Firebase successfully");
       Serial.println("Path: " + fbdo.dataPath());
       Serial.println("Data type: " + fbdo.dataType());
@@ -163,16 +162,4 @@ void tokenStatusCallback(token_info_t info)
     Serial.println("Unknown status");
     break;
   }
-
-  //if (status == 0)
-  //{
-    // Print or use other relevant information from the info structure
-    // For example, you can use info.token_type and info.expires to get additional information
-    // Serial.println("Generated Token Type: " + String(info.token_type));
-    // Serial.println("Token Expires: " + String(info.expires));
-  //}
-  //else
-  //{
-    // Handle errors or retry logic here
-  //}
 }
