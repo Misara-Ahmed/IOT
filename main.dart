@@ -15,6 +15,8 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'firebase_options.dart';
 
+import 'notification.dart';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 DatabaseReference dbRef = FirebaseDatabase.instance.ref("potentiometers");
@@ -52,29 +54,29 @@ class _RealTimeState extends State<RealTime> {
   late DatabaseReference dbRef;
 
   @override
-  void initState() {
-    super.initState();
-    dbRef = FirebaseDatabase.instance.reference();
-  }
+  // void initState() {
+  //   super.initState();
+  //   dbRef = FirebaseDatabase.instance.reference();
+  // }
 
-  Map<String, dynamic> flattenMap(Map<dynamic, dynamic> nestedMap,
-      {String prefix = ''}) {
-    Map<String, dynamic> flattenedMap = {};
-
-    void flatten(Map<dynamic, dynamic> map, {String prefix = ''}) {
-      map.forEach((key, value) {
-        if (value is Map<dynamic, dynamic>) {
-          flatten(value, prefix: '$prefix$key.');
-        } else {
-          flattenedMap['$prefix$key'] = value;
-        }
-      });
-    }
-
-    flatten(nestedMap);
-
-    return flattenedMap;
-  }
+  // Map<String, dynamic> flattenMap(Map<dynamic, dynamic> nestedMap,
+  //     {String prefix = ''}) {
+  //   Map<String, dynamic> flattenedMap = {};
+  //
+  //   void flatten(Map<dynamic, dynamic> map, {String prefix = ''}) {
+  //     map.forEach((key, value) {
+  //       if (value is Map<dynamic, dynamic>) {
+  //         flatten(value, prefix: '$prefix$key.');
+  //       } else {
+  //         flattenedMap['$prefix$key'] = value;
+  //       }
+  //     });
+  //   }
+  //
+  //   flatten(nestedMap);
+  //
+  //   return flattenedMap;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -82,36 +84,54 @@ class _RealTimeState extends State<RealTime> {
       appBar: AppBar(
         title: const Text('Real-Time Data'),
       ),
-      body: StreamBuilder(
-        stream: dbRef.onValue,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            DataSnapshot dataValues = snapshot.data!.snapshot;
-            Map<dynamic, dynamic>? potValues = dataValues.value as Map?;
-            // print(flattenMap(potValues!));
-            final output = flattenMap(potValues!);
-            List<MapEntry<dynamic, dynamic>> items =
-                output?.entries.toList() ?? [];
-            items.sort((a, b) => a.key.compareTo(b.key));
-            // print(potValues);
-            return ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: ListTile(
-                    title: Text(items[index].key.toString()),
-                    subtitle: Text(items[index].value.toString()),
-                  ),
-                );
-              },
-            );
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
+      // body: StreamBuilder(
+      //   stream: dbRef.onValue,
+      //   builder: (context, snapshot) {
+      //     if (snapshot.hasData) {
+      //       DataSnapshot dataValues = snapshot.data!.snapshot;
+      //       Map<dynamic, dynamic>? potValues = dataValues.value as Map?;
+      //       // print(flattenMap(potValues!));
+      //       final output = flattenMap(potValues!);
+      //       List<MapEntry<dynamic, dynamic>> items =
+      //           output?.entries.toList() ?? [];
+      //       items.sort((a, b) => a.key.compareTo(b.key));
+      //       print(items[0].value);
+      //       print(items[1].value);
+      //       print(items[2].value);
+      //       print(output);
+      //
+      //       if((items[0].value)==true)
+      //       {
+      //         NotificationService().showNotification(title: 'ALert', body:'Heart rate is out of range!');
+      //         print(" yalhwaaaaaaaaay");
+      //       }
+      //       if((items[1].value)==true)
+      //       {
+      //         NotificationService().showNotification(title: 'ALert', body:'Oxygen concentration is out of range!');
+      //       }
+      //       if((items[2].value)==true)
+      //       {
+      //         NotificationService().showNotification(title: 'ALert', body:'Temperature is out of range!');
+      //       }
+      //
+      //       return ListView.builder(
+      //         itemCount: items.length,
+      //         itemBuilder: (context, index) {
+      //           return Card(
+      //             child: ListTile(
+      //               title: Text(items[index].key.toString()),
+      //               subtitle: Text(items[index].value.toString()),
+      //             ),
+      //           );
+      //         },
+      //       );
+      //     } else if (snapshot.hasError) {
+      //       return Center(child: Text('Error: ${snapshot.error}'));
+      //     } else {
+      //       return const Center(child: CircularProgressIndicator());
+      //     }
+      //   },
+      // ),
     );
   }
 }
@@ -375,32 +395,43 @@ class _CsvScreenState extends State<CsvScreen> {
                           potValues?.entries.toList() ?? [];
                       items.sort((a, b) => a.key.compareTo(b.key));
                       List keys = ["Heart rate", "spo2", "Temp"];
-                      return Expanded(
-                        child: Container(
-                          // color: Colors.black87,
+                      // print(items[0].value);
+                      if(items[0].value > 120 || items[0].value<80)
+                      {
+                        NotificationService().showNotification(title: 'ALert', body:'Heart rate is out of range!');
+                        //print(" yalhwaaaaaaaaay");
+                      }
+                      if((items[1].value)<95)
+                      {
+                        NotificationService().showNotification(title: 'ALert', body:'Oxygen concentration is out of range!');
+                      }
+                      if((items[2].value)>38 || (items[2].value)<30)
+                      {
+                        NotificationService().showNotification(title: 'ALert', body:'Temperature is out of range!');
+                      }
 
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: items.length,
-                            itemBuilder: (context, index) {
-                              return Card(
-                                color: Colors.black,
-                                child: ListTile(
-                                  title: Text(
-                                    keys[index].toString(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    items[index].value.toString(),
-                                    style: const TextStyle(
-                                        color: Colors.red, fontSize: 15),
+                      return Expanded(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              color: Colors.black,
+                              child: ListTile(
+                                title: Text(
+                                  keys[index].toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                                subtitle: Text(
+                                  items[index].value.toString(),
+                                  style: const TextStyle(
+                                      color: Colors.red, fontSize: 15),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       );
                     } else if (snapshot.hasError) {
@@ -412,6 +443,7 @@ class _CsvScreenState extends State<CsvScreen> {
                 ),
               ],
             ),
+
     );
   }
 }
